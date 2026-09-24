@@ -719,18 +719,38 @@ def write_config_yaml(data: dict[str, str], *, reset_model: bool = False) -> Non
 
     # Custom OpenAI-compatible endpoint — write custom_providers block when configured,
     # remove it when not (safe on Railway where users don't hand-edit config.yaml).
+    # MULTI-SLOT: the dashboard owns exactly one slot (CUSTOM_PROVIDER_*); any other
+    # provider entries managed externally (e.g. ceoweb3, wildan) are preserved
+    # so saving here no longer wipes the other providers.
     custom_base_url = data.get("CUSTOM_PROVIDER_BASE_URL", "").strip()
+    _existing_providers = [
+        p for p in (existing.get("custom_providers") or []) if isinstance(p, dict)
+    ]
     if custom_base_url:
         raw_name = data.get("CUSTOM_PROVIDER_NAME", "").strip() or custom_base_url
         # Sanitise to a valid hermes provider name (lowercase alphanumeric + hyphens).
         sanitized_name = re.sub(r"[^a-z0-9-]", "-", raw_name.lower()).strip("-") or "custom"
-        merged["custom_providers"] = [{
+        managed = {
             "name": sanitized_name,
             "base_url": custom_base_url,
             "key_env": "CUSTOM_PROVIDER_API_KEY",
-        }]
+        }
+        others = [
+            p for p in _existing_providers
+            if p.get("name") != sanitized_name
+            and p.get("key_env") != "CUSTOM_PROVIDER_API_KEY"
+        ]
+        merged["custom_providers"] = [managed] + others
     else:
-        merged.pop("custom_providers", None)
+        # No dashboard slot configured — keep externally-managed providers only.
+        others = [
+            p for p in _existing_providers
+            if p.get("key_env") != "CUSTOM_PROVIDER_API_KEY"
+        ]
+        if others:
+            merged["custom_providers"] = others
+        else:
+            merged.pop("custom_providers", None)
 
     with config_path.open("w") as f:
         yaml.safe_dump(merged, f, sort_keys=False, default_flow_style=False)
