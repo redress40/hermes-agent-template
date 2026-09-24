@@ -2359,11 +2359,11 @@ function app() {
         modelHint: '“auto” uses OmniRoute’s smart routing; you can also enter an exact model or combo.',
         docsUrl: 'https://github.com/diegosouzapw/OmniRoute#-quick-start',
       },
-      'Custom Endpoint':      { key: 'CUSTOM_PROVIDER_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER_API_KEY',placeholder: '',         isCustom: true },
-      'Custom Endpoint 2':    { key: 'CUSTOM_PROVIDER2_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER2_API_KEY',placeholder: '',         isCustom: true },
-      'Custom Endpoint 3':    { key: 'CUSTOM_PROVIDER3_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER3_API_KEY',placeholder: '',         isCustom: true },
-      'Custom Endpoint 4':    { key: 'CUSTOM_PROVIDER4_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER4_API_KEY',placeholder: '',         isCustom: true },
-      'Custom Endpoint 5':    { key: 'CUSTOM_PROVIDER5_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER5_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint':      { key: 'CUSTOM_PROVIDER_API_KEY',nameKey: 'CUSTOM_PROVIDER_NAME', modelKey: '_MODEL_CUSTOM_PROVIDER_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint 2':    { key: 'CUSTOM_PROVIDER2_API_KEY',nameKey: 'CUSTOM_PROVIDER2_NAME', modelKey: '_MODEL_CUSTOM_PROVIDER2_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint 3':    { key: 'CUSTOM_PROVIDER3_API_KEY',nameKey: 'CUSTOM_PROVIDER3_NAME', modelKey: '_MODEL_CUSTOM_PROVIDER3_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint 4':    { key: 'CUSTOM_PROVIDER4_API_KEY',nameKey: 'CUSTOM_PROVIDER4_NAME', modelKey: '_MODEL_CUSTOM_PROVIDER4_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint 5':    { key: 'CUSTOM_PROVIDER5_API_KEY',nameKey: 'CUSTOM_PROVIDER5_NAME', modelKey: '_MODEL_CUSTOM_PROVIDER5_API_KEY',placeholder: '',         isCustom: true },
       'xAI Grok (SuperGrok)': { key: null,                     modelKey: '_MODEL_XAI_OAUTH',              isOauth: 'xai' },
     },
 
@@ -2388,7 +2388,9 @@ function app() {
             list.push({ providerKey: name, name, model: this.vars['_MODEL_XAI_OAUTH'] || '', isOauth: true });
           }
         } else if (p.isCustom && this.vars[p.key]) {
-          const displayName = this.vars.CUSTOM_PROVIDER_NAME || this.vars.CUSTOM_PROVIDER_BASE_URL || 'Custom Endpoint';
+          // Derive provider name from its own env vars: CUSTOM_PROVIDER[2-5]_NAME
+          const nameKey = p.key.replace('API_KEY', 'NAME');
+          const displayName = this.vars[nameKey] || this.vars.CUSTOM_PROVIDER_BASE_URL || 'Custom Endpoint';
           list.push({ providerKey: name, name: displayName, model: p.modelKey ? (this.vars[p.modelKey] || '') : '', key: p.key, isCustom: true });
         } else if (p.isRouter && this.vars[p.key] && this.vars[p.baseUrlKey]) {
           list.push({ providerKey: name, name, model: p.modelKey ? (this.vars[p.modelKey] || '') : '', key: p.key, isRouter: true });
