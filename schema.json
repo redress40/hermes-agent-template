@@ -11,6 +11,13 @@
       "required": true
     },
     {
+      "name": "PORT",
+      "label": "App Port",
+      "description": "Port the app runs on (default: 8642)",
+      "defaultValue": "8642",
+      "required": false
+    },
+    {
       "name": "ADMIN_PASSWORD",
       "label": "Dashboard Password",
       "description": "Login password for the setup dashboard (min 6 chars)",
