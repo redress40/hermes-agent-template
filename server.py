@@ -302,6 +302,18 @@ ENV_VARS = [
     ("CUSTOM_PROVIDER_API_KEY",  "Custom Provider key",      "provider",  True),
     ("CUSTOM_PROVIDER_BASE_URL", "Custom Provider base URL", "custom",    False),
     ("CUSTOM_PROVIDER_NAME",     "Custom Provider name",     "custom",    False),
+    ("CUSTOM_PROVIDER2_API_KEY",  "Custom Provider 2 key",    "provider",  True),
+    ("CUSTOM_PROVIDER2_BASE_URL", "Custom Provider 2 URL",    "custom",    False),
+    ("CUSTOM_PROVIDER2_NAME",     "Custom Provider 2 name",   "custom",    False),
+    ("CUSTOM_PROVIDER3_API_KEY",  "Custom Provider 3 key",    "provider",  True),
+    ("CUSTOM_PROVIDER3_BASE_URL", "Custom Provider 3 URL",    "custom",    False),
+    ("CUSTOM_PROVIDER3_NAME",     "Custom Provider 3 name",   "custom",    False),
+    ("CUSTOM_PROVIDER4_API_KEY",  "Custom Provider 4 key",    "provider",  True),
+    ("CUSTOM_PROVIDER4_BASE_URL", "Custom Provider 4 URL",    "custom",    False),
+    ("CUSTOM_PROVIDER4_NAME",     "Custom Provider 4 name",   "custom",    False),
+    ("CUSTOM_PROVIDER5_API_KEY",  "Custom Provider 5 key",    "provider",  True),
+    ("CUSTOM_PROVIDER5_BASE_URL", "Custom Provider 5 URL",    "custom",    False),
+    ("CUSTOM_PROVIDER5_NAME",     "Custom Provider 5 name",   "custom",    False),
     ("PARALLEL_API_KEY",         "Parallel (search)",        "tool",      True),
     ("FIRECRAWL_API_KEY",        "Firecrawl (scrape)",       "tool",      True),
     ("KEENABLE_API_KEY",         "Keenable (search)",        "tool",      True),
@@ -717,40 +729,41 @@ def write_config_yaml(data: dict[str, str], *, reset_model: bool = False) -> Non
         else:
             merged.pop("providers", None)
 
-    # Custom OpenAI-compatible endpoint — write custom_providers block when configured,
-    # remove it when not (safe on Railway where users don't hand-edit config.yaml).
-    # MULTI-SLOT: the dashboard owns exactly one slot (CUSTOM_PROVIDER_*); any other
-    # provider entries managed externally (e.g. ceoweb3, wildan) are preserved
-    # so saving here no longer wipes the other providers.
-    custom_base_url = data.get("CUSTOM_PROVIDER_BASE_URL", "").strip()
+    # Custom OpenAI-compatible endpoints — up to 5 slots (CUSTOM_PROVIDER[1-5]_*).
+    # Slot 1 is the canonical CUSTOM_PROVIDER_*; slots 2-5 each add their own key
+    # + base URL. Externally managed entries (e.g. wildan) are preserved.
     _existing_providers = [
         p for p in (existing.get("custom_providers") or []) if isinstance(p, dict)
     ]
-    if custom_base_url:
-        raw_name = data.get("CUSTOM_PROVIDER_NAME", "").strip() or custom_base_url
-        # Sanitise to a valid hermes provider name (lowercase alphanumeric + hyphens).
-        sanitized_name = re.sub(r"[^a-z0-9-]", "-", raw_name.lower()).strip("-") or "custom"
-        managed = {
-            "name": sanitized_name,
-            "base_url": custom_base_url,
-            "key_env": "CUSTOM_PROVIDER_API_KEY",
-        }
-        others = [
-            p for p in _existing_providers
-            if p.get("name") != sanitized_name
-            and p.get("key_env") != "CUSTOM_PROVIDER_API_KEY"
-        ]
-        merged["custom_providers"] = [managed] + others
-    else:
-        # No dashboard slot configured — keep externally-managed providers only.
-        others = [
-            p for p in _existing_providers
-            if p.get("key_env") != "CUSTOM_PROVIDER_API_KEY"
-        ]
-        if others:
-            merged["custom_providers"] = others
-        else:
-            merged.pop("custom_providers", None)
+    _custom_slots = [
+        ("CUSTOM_PROVIDER_API_KEY", "CUSTOM_PROVIDER_BASE_URL", "CUSTOM_PROVIDER_NAME"),
+        ("CUSTOM_PROVIDER2_API_KEY", "CUSTOM_PROVIDER2_BASE_URL", "CUSTOM_PROVIDER2_NAME"),
+        ("CUSTOM_PROVIDER3_API_KEY", "CUSTOM_PROVIDER3_BASE_URL", "CUSTOM_PROVIDER3_NAME"),
+        ("CUSTOM_PROVIDER4_API_KEY", "CUSTOM_PROVIDER4_BASE_URL", "CUSTOM_PROVIDER4_NAME"),
+        ("CUSTOM_PROVIDER5_API_KEY", "CUSTOM_PROVIDER5_BASE_URL", "CUSTOM_PROVIDER5_NAME"),
+    ]
+    _slot_key_envs = {s[0] for s in _custom_slots}
+    managed_entries = []
+    for key_key, url_key, name_key in _custom_slots:
+        base_url = data.get(url_key, "").strip()
+        if not base_url:
+            continue
+        raw_name = data.get(name_key, "").strip() or base_url
+        name = re.sub(r"[^a-z0-9-]", "-", raw_name.lower()).strip("-") or "custom"
+        managed_entries.append({
+            "name": name,
+            "base_url": base_url,
+            "key_env": key_key,
+        })
+    _slot_names = {e["name"] for e in managed_entries}
+    others = [
+        p for p in _existing_providers
+        if p.get("name") not in _slot_names
+        and p.get("key_env") not in _slot_key_envs
+    ]
+    merged["custom_providers"] = managed_entries + others
+    if not merged["custom_providers"]:
+        merged.pop("custom_providers", None)
 
     with config_path.open("w") as f:
         yaml.safe_dump(merged, f, sort_keys=False, default_flow_style=False)
