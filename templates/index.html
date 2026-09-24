@@ -1167,7 +1167,63 @@
                 <label class="field-label">Base URL</label>
                 <input type="text" :value="vars.CUSTOM_PROVIDER_BASE_URL||''" @input="vars.CUSTOM_PROVIDER_BASE_URL=$event.target.value"
                        placeholder="https://api.groq.com/openai/v1">
-                <p class="hint">Any OpenAI-compatible endpoint. For more providers configure additional ones from the <a href="/?force=1" style="color:var(--accent2);">Hermes Dashboard</a> → Keys tab.</p>
+                <p class="hint">Any OpenAI-compatible endpoint. Configure up to 5 custom endpoints — select them from the dropdown above.</p>
+              </div>
+            </div>
+          </template>
+          <template x-if="selectedProvider === 'Custom Endpoint 2'">
+            <div>
+              <div class="field-gap">
+                <label class="field-label">Provider Name <span style="color:var(--text-dim);font-weight:400;">(slot 2)</span></label>
+                <input type="text" :value="vars.CUSTOM_PROVIDER2_NAME||''" @input="vars.CUSTOM_PROVIDER2_NAME=$event.target.value"
+                       placeholder="e.g. My Second Provider">
+              </div>
+              <div class="field-gap">
+                <label class="field-label">Base URL</label>
+                <input type="text" :value="vars.CUSTOM_PROVIDER2_BASE_URL||''" @input="vars.CUSTOM_PROVIDER2_BASE_URL=$event.target.value"
+                       placeholder="https://api.example.com/v1">
+              </div>
+            </div>
+          </template>
+          <template x-if="selectedProvider === 'Custom Endpoint 3'">
+            <div>
+              <div class="field-gap">
+                <label class="field-label">Provider Name <span style="color:var(--text-dim);font-weight:400;">(slot 3)</span></label>
+                <input type="text" :value="vars.CUSTOM_PROVIDER3_NAME||''" @input="vars.CUSTOM_PROVIDER3_NAME=$event.target.value"
+                       placeholder="e.g. My Third Provider">
+              </div>
+              <div class="field-gap">
+                <label class="field-label">Base URL</label>
+                <input type="text" :value="vars.CUSTOM_PROVIDER3_BASE_URL||''" @input="vars.CUSTOM_PROVIDER3_BASE_URL=$event.target.value"
+                       placeholder="https://api.example.com/v1">
+              </div>
+            </div>
+          </template>
+          <template x-if="selectedProvider === 'Custom Endpoint 4'">
+            <div>
+              <div class="field-gap">
+                <label class="field-label">Provider Name <span style="color:var(--text-dim);font-weight:400;">(slot 4)</span></label>
+                <input type="text" :value="vars.CUSTOM_PROVIDER4_NAME||''" @input="vars.CUSTOM_PROVIDER4_NAME=$event.target.value"
+                       placeholder="e.g. My Fourth Provider">
+              </div>
+              <div class="field-gap">
+                <label class="field-label">Base URL</label>
+                <input type="text" :value="vars.CUSTOM_PROVIDER4_BASE_URL||''" @input="vars.CUSTOM_PROVIDER4_BASE_URL=$event.target.value"
+                       placeholder="https://api.example.com/v1">
+              </div>
+            </div>
+          </template>
+          <template x-if="selectedProvider === 'Custom Endpoint 5'">
+            <div>
+              <div class="field-gap">
+                <label class="field-label">Provider Name <span style="color:var(--text-dim);font-weight:400;">(slot 5)</span></label>
+                <input type="text" :value="vars.CUSTOM_PROVIDER5_NAME||''" @input="vars.CUSTOM_PROVIDER5_NAME=$event.target.value"
+                       placeholder="e.g. My Fifth Provider">
+              </div>
+              <div class="field-gap">
+                <label class="field-label">Base URL</label>
+                <input type="text" :value="vars.CUSTOM_PROVIDER5_BASE_URL||''" @input="vars.CUSTOM_PROVIDER5_BASE_URL=$event.target.value"
+                       placeholder="https://api.example.com/v1">
               </div>
             </div>
           </template>
@@ -1248,7 +1304,7 @@
             <p class="hint" x-show="selectedProvider === 'AWS Bedrock'">e.g. <code>anthropic.claude-3-5-sonnet-20241022-v2:0</code>, <code>us.meta.llama3-2-90b-instruct-v1:0</code></p>
             <p class="hint" x-show="selectedProvider === 'Fireworks AI'">Format: <code>accounts/fireworks/models/&lt;model-id&gt;</code></p>
             <p class="hint" x-show="selectedProvider === 'MiniMax' || selectedProvider === 'MiniMax (China)'">e.g. <code>MiniMax-M3</code>, <code>MiniMax-M2.7</code></p>
-            <p class="hint" x-show="!['xAI Grok (SuperGrok)','xAI','Anthropic (Claude)','AWS Bedrock','Fireworks AI','MiniMax','MiniMax (China)','Custom Endpoint','Azure Foundry','9Router','OmniRoute'].includes(selectedProvider) && selectedProvider">Check your provider's docs for model names. OpenRouter format: <code>provider/model-name</code></p>
+            <p class="hint" x-show="!['xAI Grok (SuperGrok)','xAI','Anthropic (Claude)','AWS Bedrock','Fireworks AI','MiniMax','MiniMax (China)','Custom Endpoint','Custom Endpoint 2','Custom Endpoint 3','Custom Endpoint 4','Custom Endpoint 5','Azure Foundry','9Router','OmniRoute'].includes(selectedProvider) && selectedProvider">Check your provider's docs for model names. OpenRouter format: <code>provider/model-name</code></p>
           </div>
         </div>
 
@@ -2304,6 +2360,10 @@ function app() {
         docsUrl: 'https://github.com/diegosouzapw/OmniRoute#-quick-start',
       },
       'Custom Endpoint':      { key: 'CUSTOM_PROVIDER_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint 2':    { key: 'CUSTOM_PROVIDER2_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER2_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint 3':    { key: 'CUSTOM_PROVIDER3_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER3_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint 4':    { key: 'CUSTOM_PROVIDER4_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER4_API_KEY',placeholder: '',         isCustom: true },
+      'Custom Endpoint 5':    { key: 'CUSTOM_PROVIDER5_API_KEY',modelKey: '_MODEL_CUSTOM_PROVIDER5_API_KEY',placeholder: '',         isCustom: true },
       'xAI Grok (SuperGrok)': { key: null,                     modelKey: '_MODEL_XAI_OAUTH',              isOauth: 'xai' },
     },
 
