@@ -1,0 +1,46 @@
+{
+  "railway": {
+    "template": "Hermes Agent"
+  },
+  "variables": [
+    {
+      "name": "ADMIN_USERNAME",
+      "label": "Dashboard Username",
+      "description": "Login username for the setup dashboard",
+      "defaultValue": "admin",
+      "required": true
+    },
+    {
+      "name": "ADMIN_PASSWORD",
+      "label": "Dashboard Password",
+      "description": "Login password for the setup dashboard (min 6 chars)",
+      "required": true,
+      "password": true
+    },
+    {
+      "name": "TELEGRAM_BOT_TOKEN",
+      "label": "Telegram Bot Token",
+      "description": "Bot token from @BotFather on Telegram",
+      "required": true,
+      "password": true
+    },
+    {
+      "name": "CUSTOM_PROVIDER_API_KEY",
+      "label": "Custom API Key (Slot 1)",
+      "description": "API key for your custom OpenAI-compatible provider",
+      "required": false
+    },
+    {
+      "name": "CUSTOM_PROVIDER_BASE_URL",
+      "label": "Custom Base URL (Slot 1)",
+      "description": "Base URL for your custom provider",
+      "required": false
+    },
+    {
+      "name": "CUSTOM_PROVIDER_NAME",
+      "label": "Custom Provider Name (Slot 1)",
+      "defaultValue": "custom",
+      "required": false
+    }
+  ]
+}
