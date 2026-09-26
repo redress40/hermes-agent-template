@@ -1772,6 +1772,46 @@ class Gateway:
         # a live gateway's lock.
         self._clear_stale_pidfile(dead_pid)
         self._warn_if_replace_refused()
+        # Self-heal v2026.8.27's cross-profile --replace gate. A refused
+        # replace means the pid record (or a stale runtime fallback row) names
+        # a PID this container's gateway no longer owns -- a classic race:
+        # /restart respawns a new gateway before the old one finished its
+        # drain, and the loser's startup cleanup unlinks the record the winner
+        # still needs to prove ownership. No retry can clear that state on its
+        # own. This container runs exactly one gateway (see HERMES_GATEWAY_-
+        # LOCK_DIR comment above), so records naming a DIFFERENT dead/foreign
+        # PID are by definition stale here: sweep them like start.sh does at
+        # boot, but only after the refusal actually fired, and never while the
+        # tracked process is still alive.
+        recent = list(self.logs)[-30:]
+        if any(REPLACE_REFUSED_MARKER in line for line in recent):
+            if not (self.proc and self.proc.returncode is None):
+                _home = Path(HERMES_HOME)
+                _ours = os.environ.get("HERMES_HOME", "")
+                try:
+                    _env0 = Path(f"/proc/{dead_pid}/environ").read_bytes().split(b"\0")
+                    _ours = next((e.decode().split("=", 1)[1]
+                                  for e in _env0 if e.startswith(b"HERMES_HOME=")), _ours)
+                except OSError:
+                    pass
+                for _f in ("gateway.pid", "gateway.lock", "gateway.sock"):
+                    try:
+                        _path = _home / _f
+                        if not _path.exists():
+                            continue
+                        if _f != "gateway.sock":
+                            try:
+                                _rec = json.loads(_path.read_text())
+                            except Exception:
+                                _rec = {}
+                            _rec_home = _rec.get("hermes_home")
+                            if _rec_home and _ours and Path(_rec_home) != Path(_ours):
+                                continue  # genuinely another profile's record
+                        _path.unlink()
+                        self.logs.append(
+                            f"[gateway] swept stale {_f} after --replace refusal")
+                    except OSError:
+                        pass
         self.restarts += 1
         await self.start(reset_budget=False)
 
